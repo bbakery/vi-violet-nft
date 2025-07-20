@@ -1,5 +1,5 @@
 import React from 'react';
-import NFTContract from '../contracts/NFTContract';
+import { NFTContract } from '../contracts/NFTContract';
 
 interface NFTMintButtonProps {
     paintingId: string;
