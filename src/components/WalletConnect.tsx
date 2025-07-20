@@ -13,7 +13,7 @@ const providerOptions = {
         package: WalletConnectProvider,
         options: {
             rpc: {
-                1: 'https://mainnet.infura.io/v3/1c3e1e7e2e2e4e2e8e2e1e7e2e2e4e2e', // замініть на свій Infura ID при потребі
+                1: 'https://mainnet.infura.io/v3/1c3e1e7e2e2e4e2e8e2e1e7e2e2e4e2e',
             },
         },
     },
@@ -24,10 +24,35 @@ const web3Modal = typeof window !== 'undefined' && new Web3Modal({
     providerOptions,
 });
 
+// Додаємо визначення мобільного браузера
+function isMobile() {
+    if (typeof window === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+function isInWalletBrowser() {
+    if (typeof window === 'undefined') return false;
+    // MetaMask Mobile
+    if ((window as any).ethereum && (window as any).ethereum.isMetaMask) return true;
+    // Trust Wallet
+    if ((window as any).ethereum && (window as any).ethereum.isTrust) return true;
+    // Rainbow, Coinbase, інші — можна додати за потреби
+    return false;
+}
+
 const WalletConnect: React.FC<WalletConnectProps> = ({ onWalletConnect }) => {
     const [isConnecting, setIsConnecting] = useState(false);
     const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
     const [provider, setProvider] = useState<any>(null);
+    const [showMobileHint, setShowMobileHint] = useState(false);
+
+    useEffect(() => {
+        if (isMobile() && !isInWalletBrowser()) {
+            setShowMobileHint(true);
+        } else {
+            setShowMobileHint(false);
+        }
+    }, []);
 
     const connectWallet = async () => {
         setIsConnecting(true);
@@ -48,7 +73,6 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onWalletConnect }) => {
                     onWalletConnect(walletInfo);
                 }
             } else if (typeof window.ethereum !== 'undefined') {
-                // fallback for SSR
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 if (accounts.length > 0) {
                     const walletInfo: WalletInfo = {
@@ -96,10 +120,27 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onWalletConnect }) => {
             right: '20px',
             zIndex: 1000
         }}>
+            {showMobileHint && !walletInfo?.isConnected && (
+                <div style={{
+                    background: 'rgba(255,0,0,0.9)',
+                    color: '#fff',
+                    padding: '12px 18px',
+                    borderRadius: '15px',
+                    marginBottom: '10px',
+                    fontFamily: 'monospace',
+                    fontSize: '1rem',
+                    boxShadow: '0 0 10px #ff00ff',
+                    maxWidth: '320px'
+                }}>
+                    <b>Підключення гаманця з мобільного:</b><br/>
+                    Відкрийте сайт у вбудованому браузері MetaMask або Trust Wallet.<br/>
+                    <span style={{color:'#ff0'}}>Або скористайтесь WalletConnect у додатку.</span>
+                </div>
+            )}
             {!walletInfo?.isConnected ? (
                 <button
                     onClick={connectWallet}
-                    disabled={isConnecting}
+                    disabled={isConnecting || showMobileHint}
                     style={{
                         background: 'linear-gradient(45deg, #ff00ff, #00ffff)',
                         border: '2px solid #ff00ff',
@@ -108,22 +149,24 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onWalletConnect }) => {
                         borderRadius: '25px',
                         fontSize: '16px',
                         fontWeight: 'bold',
-                        cursor: isConnecting ? 'not-allowed' : 'pointer',
+                        cursor: isConnecting || showMobileHint ? 'not-allowed' : 'pointer',
                         boxShadow: '0 0 20px rgba(255, 0, 255, 0.5)',
                         textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
                         transition: 'all 0.3s ease',
                         fontFamily: 'monospace',
                         textTransform: 'uppercase',
-                        letterSpacing: '1px'
+                        letterSpacing: '1px',
+                        opacity: showMobileHint ? 0.5 : 1
                     }}
+                    title={showMobileHint ? 'Відкрийте сайт у вбудованому браузері гаманця або скористайтесь WalletConnect' : ''}
                     onMouseEnter={(e) => {
-                        if (!isConnecting) {
+                        if (!isConnecting && !showMobileHint) {
                             e.currentTarget.style.boxShadow = '0 0 30px rgba(255, 0, 255, 0.8)';
                             e.currentTarget.style.transform = 'scale(1.05)';
                         }
                     }}
                     onMouseLeave={(e) => {
-                        if (!isConnecting) {
+                        if (!isConnecting && !showMobileHint) {
                             e.currentTarget.style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.5)';
                             e.currentTarget.style.transform = 'scale(1)';
                         }
