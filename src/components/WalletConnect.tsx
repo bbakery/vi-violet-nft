@@ -1,34 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import { WalletInfo } from '../types';
+import Web3Modal from 'web3modal';
+import WalletConnectProvider from '@walletconnect/web3-provider';
+import { ethers } from 'ethers';
 
 interface WalletConnectProps {
     onWalletConnect: (walletInfo: WalletInfo) => void;
 }
 
+const providerOptions = {
+    walletconnect: {
+        package: WalletConnectProvider,
+        options: {
+            rpc: {
+                1: 'https://mainnet.infura.io/v3/1c3e1e7e2e2e4e2e8e2e1e7e2e2e4e2e', // замініть на свій Infura ID при потребі
+            },
+        },
+    },
+};
+
+const web3Modal = typeof window !== 'undefined' && new Web3Modal({
+    cacheProvider: true,
+    providerOptions,
+});
+
 const WalletConnect: React.FC<WalletConnectProps> = ({ onWalletConnect }) => {
     const [isConnecting, setIsConnecting] = useState(false);
     const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
+    const [provider, setProvider] = useState<any>(null);
 
     const connectWallet = async () => {
         setIsConnecting(true);
         try {
-            if (typeof window.ethereum !== 'undefined') {
-                const accounts = await window.ethereum.request({ 
-                    method: 'eth_requestAccounts' 
-                });
-                
+            let instance;
+            if (web3Modal) {
+                instance = await web3Modal.connect();
+                setProvider(instance);
+                const ethersProvider = new ethers.providers.Web3Provider(instance);
+                const accounts = await ethersProvider.listAccounts();
                 if (accounts.length > 0) {
                     const walletInfo: WalletInfo = {
                         address: accounts[0],
                         balance: {},
                         isConnected: true
                     };
-                    
+                    setWalletInfo(walletInfo);
+                    onWalletConnect(walletInfo);
+                }
+            } else if (typeof window.ethereum !== 'undefined') {
+                // fallback for SSR
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts.length > 0) {
+                    const walletInfo: WalletInfo = {
+                        address: accounts[0],
+                        balance: {},
+                        isConnected: true
+                    };
                     setWalletInfo(walletInfo);
                     onWalletConnect(walletInfo);
                 }
             } else {
-                alert('Будь ласка, встановіть MetaMask або інший Web3 гаманець!');
+                alert('Будь ласка, встановіть MetaMask, Trust Wallet або інший Web3 гаманець!');
             }
         } catch (error) {
             console.error('Помилка підключення гаманця:', error);
@@ -38,13 +70,19 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onWalletConnect }) => {
         }
     };
 
-    const disconnectWallet = () => {
+    const disconnectWallet = async () => {
         setWalletInfo(null);
         onWalletConnect({
             address: '',
             balance: {},
             isConnected: false
         });
+        if (web3Modal && web3Modal.clearCachedProvider) {
+            await web3Modal.clearCachedProvider();
+        }
+        if (provider && provider.disconnect && typeof provider.disconnect === 'function') {
+            await provider.disconnect();
+        }
     };
 
     const shortenAddress = (address: string) => {
