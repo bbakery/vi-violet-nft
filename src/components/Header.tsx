@@ -26,66 +26,7 @@ const Header: React.FC = () => {
             }}>
                 🎨 Вікторія Гордій - NFT Аукціон
             </h1>
-            <nav>
-                <ul style={{
-                    listStyle: 'none',
-                    display: 'flex',
-                    gap: '2rem',
-                    margin: 0,
-                    padding: 0
-                }}>
-                    <li>
-                        <Link href="/" style={{ 
-                            color: '#00ffff', 
-                            textDecoration: 'none', 
-                            fontSize: '1.1rem',
-                            fontFamily: 'monospace',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            padding: '8px 16px',
-                            borderRadius: '20px',
-                            border: '1px solid #00ffff',
-                            transition: 'all 0.3s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)';
-                            e.currentTarget.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.5)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        >
-                            🏠 Головна
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="/gallery" style={{ 
-                            color: '#ff00ff', 
-                            textDecoration: 'none', 
-                            fontSize: '1.1rem',
-                            fontFamily: 'monospace',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            padding: '8px 16px',
-                            borderRadius: '20px',
-                            border: '1px solid #ff00ff',
-                            transition: 'all 0.3s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 0, 255, 0.2)';
-                            e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 0, 255, 0.5)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        >
-                            🎨 Аукціон
-                        </Link>
-                    </li>
-                </ul>
-            </nav>
+            {/* Видалено навігаційні кнопки */}
         </header>
     );
 };
