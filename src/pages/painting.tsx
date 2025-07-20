@@ -26,7 +26,7 @@ const PaintingPage: React.FC = () => {
             <h1>{painting.title}</h1>
             <img src={painting.imageUrl} alt={painting.title} />
             <p>{painting.description}</p>
-            <NFTMintButton paintingId={painting.id} />
+            <NFTMintButton paintingId={painting.id} onMintSuccess={() => {}} />
         </div>
     );
 };
