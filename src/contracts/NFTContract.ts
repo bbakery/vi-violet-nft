@@ -1,32 +1,22 @@
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
-class NFTContract {
-    private contract: ethers.Contract;
+export class NFTContract {
+    contract: ethers.Contract | null;
 
     constructor(contractAddress: string, abi: any) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        this.contract = new ethers.Contract(contractAddress, abi, provider.getSigner());
-    }
-
-    async mintNFT(tokenURI: string): Promise<void> {
-        try {
-            const transaction = await this.contract.mint(tokenURI);
-            await transaction.wait();
-            console.log('NFT minted successfully');
-        } catch (error) {
-            console.error('Error minting NFT:', error);
+        let provider;
+        if (typeof window !== "undefined" && (window as any).ethereum) {
+            provider = new ethers.providers.Web3Provider((window as any).ethereum);
+            this.contract = new ethers.Contract(contractAddress, abi, provider.getSigner());
+        } else {
+            // Не створюємо контракт на сервері/SSR
+            this.contract = null;
         }
     }
 
-    async getNFTData(tokenId: number): Promise<any> {
-        try {
-            const data = await this.contract.getNFTData(tokenId);
-            return data;
-        } catch (error) {
-            console.error('Error fetching NFT data:', error);
-            throw error;
-        }
+    // Приклад безпечного виклику contract
+    async callSomeMethod(...args: any[]) {
+        if (!this.contract) throw new Error("Контракт недоступний на сервері");
+        // return await this.contract.someMethod(...args);
     }
 }
-
-export default NFTContract;
