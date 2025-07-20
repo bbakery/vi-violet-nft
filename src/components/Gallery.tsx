@@ -545,7 +545,7 @@ const Gallery: React.FC = () => {
                     fontFamily: 'monospace',
                     textShadow: '0 0 15px rgba(0, 255, 255, 0.6)'
                 }}>
-                    Колекція з 18 унікальних картин
+                    Колекція з унікальних картин
                 </h3>
                 
                 <div style={{
